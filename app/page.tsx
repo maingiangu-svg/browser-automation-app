@@ -1,52 +1,21 @@
-"use client"
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server"
 
-import { Show, SignInButton, UserButton } from "@clerk/nextjs"
-import { toast } from "sonner"
+const isPublicRoute = createRouteMatcher([
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+])
 
-import { Button } from "@/components/ui/button"
+export default clerkMiddleware(async (auth, req) => {
+  if (!isPublicRoute(req)) {
+    await auth.protect()
+  }
+})
 
-export default function Page() {
-  return (
-    <div className="flex min-h-svh p-6">
-      <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-        <div className="flex items-center justify-between">
-          <h1 className="font-medium">Project ready!</h1>
-          <div>
-            <Show when="signed-out">
-              <SignInButton mode="modal">
-                <Button variant="outline" size="sm">
-                  Sign In
-                </Button>
-              </SignInButton>
-            </Show>
-            <Show when="signed-in">
-              <UserButton />
-            </Show>
-          </div>
-        </div>
-
-        <div>
-          <p>You may now add components and start building.</p>
-          <p>We&apos;ve already added the button component for you.</p>
-          <Button
-            className="mt-2"
-            onClick={() =>
-              toast("Event has been created", {
-                description: "Sunday, December 03, 2023 at 9:00 AM",
-                action: {
-                  label: "Undo",
-                  onClick: () => console.log("Undo"),
-                },
-              })
-            }
-          >
-            Show Toast
-          </Button>
-        </div>
-        <div className="font-mono text-xs text-muted-foreground">
-          (Press <kbd>d</kbd> to toggle dark mode)
-        </div>
-      </div>
-    </div>
-  )
+export const config = {
+  matcher: [
+    // Skip Next.js internals and all static files, unless found in search params
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|json|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    // Always run for API routes
+    "/(api|trpc)(.*)",
+  ],
 }
