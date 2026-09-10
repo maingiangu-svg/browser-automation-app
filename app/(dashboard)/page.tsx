@@ -1,17 +1,17 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server"
+import { WorkflowShell } from "@/features/workflows/components/workflow-shell";
 
-const isPublicRoute = createRouteMatcher([
-  "/sign-in(.*)",
-  "/sign-up(.*)",
-])
+interface WorkflowPageProps {
+  params: Promise<{
+    workflowId: string;
+  }>;
+}
 
-export default function Page() {
+export default async function WorkflowPage({ params }: WorkflowPageProps) {
+  const { workflowId } = await params;
+
   return (
-    <div className="flex h-full flex-col items-center justify-center p-8 text-center">
-      <h2 className="text-xl font-semibold">No workflow selected</h2>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Select a workflow from the sidebar or create a new one to get started.
-      </p>
-    </div>
-  )
+    <main className="flex h-full w-full flex-1 overflow-hidden">
+      <WorkflowShell workflowId={workflowId} />
+    </main>
+  );
 }

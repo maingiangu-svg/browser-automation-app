@@ -5,6 +5,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { RightSidebar } from "./right-sidebar";
 
 interface WorkflowShellProps {
   workflowId: string;
@@ -12,44 +13,36 @@ interface WorkflowShellProps {
 
 export function WorkflowShell({ workflowId }: WorkflowShellProps) {
   return (
-    <div className="flex h-full w-full flex-col">
-      <ResizablePanelGroup orientation="horizontal" className="h-full w-full">
-        {/* Main Workspace (Canvas + Logs) */}
-        <ResizablePanel defaultSize={80} minSize={30}>
-          <ResizablePanelGroup orientation="vertical">
-            {/* Top Panel: Canvas Placeholder */}
-            <ResizablePanel defaultSize={70} minSize={30}>
-              <div className="flex h-full items-center justify-center bg-background p-4">
-                <span className="font-semibold text-muted-foreground">
-                  Canvas Placeholder ({workflowId})
-                </span>
-              </div>
-            </ResizablePanel>
+    <div className="flex h-full w-full overflow-hidden">
+      {/* Main Workspace (Canvas + Logs) chiếm toàn bộ diện tích còn lại */}
+      <div className="flex-1 h-full overflow-hidden">
+        <ResizablePanelGroup orientation="vertical" className="h-full w-full">
+          {/* Canvas Placeholder */}
+          <ResizablePanel defaultSize={70} minSize={30}>
+            <div className="flex h-full items-center justify-center bg-background p-4">
+              <span className="font-semibold text-muted-foreground">
+                Canvas Placeholder ({workflowId})
+              </span>
+            </div>
+          </ResizablePanel>
 
-            <ResizableHandle />
+          <ResizableHandle withHandle />
 
-            {/* Bottom Panel: Logs Placeholder */}
-            <ResizablePanel defaultSize={30} minSize={15}>
-              <div className="flex h-full items-center justify-center bg-muted/30 p-4">
-                <span className="font-semibold text-muted-foreground">
-                  Logs Placeholder
-                </span>
-              </div>
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        </ResizablePanel>
+          {/* Logs Placeholder */}
+          <ResizablePanel defaultSize={30} minSize={15}>
+            <div className="flex h-full items-center justify-center bg-muted/30 p-4">
+              <span className="font-semibold text-muted-foreground">
+                Logs Placeholder
+              </span>
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
 
-        <ResizableHandle />
-
-        {/* Right Sidebar: Inspector */}
-        <ResizablePanel defaultSize={20} minSize={15} maxSize={35}>
-          <div className="flex h-full items-center justify-center bg-background p-4">
-            <span className="font-semibold text-muted-foreground">
-              Inspector Panel
-            </span>
-          </div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
+      {/* Cột RightSidebar cố định độ rộng 320px (w-80) không lo bị bóp */}
+      <div className="w-80 h-full border-l shrink-0 bg-background">
+        <RightSidebar />
+      </div>
     </div>
   );
 }

@@ -1,17 +1,22 @@
-"use server"
+"use server";
 
-import { auth } from "@clerk/nextjs/server"
-import { redirect } from "next/navigation"
-import { createWorkflow } from "./data"
+import { redirect } from "next/navigation";
+import { tasks } from "@trigger.dev/sdk";
+import type { helloWorldTask } from "@/trigger/example";
 
-export async function createWorkflowAction(name: string) {
-  const { orgId } = await auth()
+// Thêm tham số name vào đây
+export async function createWorkflowAction(name?: string) {
+  // Logic tạo workflow của bạn (ví dụ tạo slug, lưu DB, redirect...)
+  return { success: true };
+}
 
-  if (!orgId) {
-    throw new Error("Unauthorized")
-  }
+export async function runWorkflowAction() {
+  const handle = await tasks.trigger<typeof helloWorldTask>("hello-world", {
+    message: "Hello from Right Sidebar!",
+  });
 
-  const workflow = await createWorkflow(orgId, name)
-
-  redirect(`/workflows/${workflow.id}`)
+  return {
+    runId: handle.id,
+    publicAccessToken: handle.publicAccessToken,
+  };
 }

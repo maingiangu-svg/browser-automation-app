@@ -1,15 +1,17 @@
-import { AppSidebar } from "@/components/app-sidebar"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
 
 export default function DashboardLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
-    <SidebarProvider className="h-svh">
+    <SidebarProvider>
       <AppSidebar />
-      <SidebarInset>{children}</SidebarInset>
+      <SidebarInset className="flex h-screen flex-1 flex-col overflow-hidden">
+        {children}
+      </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }
