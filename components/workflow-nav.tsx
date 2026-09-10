@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useTransition } from "react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { PlusIcon, WorkflowIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -32,9 +33,7 @@ interface WorkflowNavProps {
 
 export function WorkflowNav({ workflows }: WorkflowNavProps) {
   const { state } = useSidebar()
-  const [activeId, setActiveId] = React.useState<string | null>(
-    workflows[0]?.id || null
-  )
+  const pathname = usePathname()
   const [isPending, startTransition] = useTransition()
 
   const handleCreate = () => {
@@ -71,19 +70,23 @@ export function WorkflowNav({ workflows }: WorkflowNavProps) {
               </div>
               <SidebarSeparator className="my-1" />
               <div className="flex flex-col gap-1 pt-1">
-                {workflows.map((wf) => (
-                  <Button
-                    key={wf.id}
-                    asChild
-                    variant={activeId === wf.id ? "secondary" : "ghost"}
-                    className="justify-start text-xs h-8 truncate"
-                    onClick={() => setActiveId(wf.id)}
-                  >
-                    <Link href={`/workflows/${wf.id}`}>
-                      <span className="truncate">{wf.name}</span>
-                    </Link>
-                  </Button>
-                ))}
+                {workflows.map((wf) => {
+                  const href = `/workflows/${wf.id}`
+                  const isActive = pathname === href
+
+                  return (
+                    <Button
+                      key={wf.id}
+                      asChild
+                      variant={isActive ? "secondary" : "ghost"}
+                      className="justify-start text-xs h-8 truncate"
+                    >
+                      <Link href={href}>
+                        <span className="truncate">{wf.name}</span>
+                      </Link>
+                    </Button>
+                  )
+                })}
               </div>
             </PopoverContent>
           </Popover>
@@ -104,19 +107,20 @@ export function WorkflowNav({ workflows }: WorkflowNavProps) {
       </SidebarGroupAction>
       <SidebarGroupContent>
         <SidebarMenu>
-          {workflows.map((wf) => (
-            <SidebarMenuItem key={wf.id}>
-              <SidebarMenuButton
-                isActive={activeId === wf.id}
-                onClick={() => setActiveId(wf.id)}
-                asChild
-              >
-                <Link href={`/workflows/${wf.id}`}>
-                  <span className="truncate">{wf.name}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
+          {workflows.map((wf) => {
+            const href = `/workflows/${wf.id}`
+            const isActive = pathname === href
+
+            return (
+              <SidebarMenuItem key={wf.id}>
+                <SidebarMenuButton isActive={isActive} asChild>
+                  <Link href={href}>
+                    <span className="truncate">{wf.name}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )
+          })}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
