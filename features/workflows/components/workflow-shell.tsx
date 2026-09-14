@@ -6,6 +6,7 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { RightSidebar } from "./right-sidebar";
+import { Canvas } from "./canvas";
 
 interface WorkflowShellProps {
   workflowId: string;
@@ -14,16 +15,12 @@ interface WorkflowShellProps {
 export function WorkflowShell({ workflowId }: WorkflowShellProps) {
   return (
     <div className="flex h-full w-full overflow-hidden">
-      {/* Main Workspace (Canvas + Logs) chiếm toàn bộ diện tích còn lại */}
+      {/* Workspace khu vực Canvas + Logs */}
       <div className="flex-1 h-full overflow-hidden">
         <ResizablePanelGroup orientation="vertical" className="h-full w-full">
-          {/* Canvas Placeholder */}
+          {/* Canvas Component */}
           <ResizablePanel defaultSize={70} minSize={30}>
-            <div className="flex h-full items-center justify-center bg-background p-4">
-              <span className="font-semibold text-muted-foreground">
-                Canvas Placeholder ({workflowId})
-              </span>
-            </div>
+            <Canvas />
           </ResizablePanel>
 
           <ResizableHandle withHandle />
@@ -39,7 +36,7 @@ export function WorkflowShell({ workflowId }: WorkflowShellProps) {
         </ResizablePanelGroup>
       </div>
 
-      {/* Cột RightSidebar cố định độ rộng 320px (w-80) không lo bị bóp */}
+      {/* Right Sidebar cố định w-80 */}
       <div className="w-80 h-full border-l shrink-0 bg-background">
         <RightSidebar />
       </div>
