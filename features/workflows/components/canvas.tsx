@@ -1,22 +1,23 @@
 "use client";
 
-import { useSyncExternalStore, useCallback } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { useTheme } from "next-themes";
 import {
   ReactFlow,
   Controls,
-  Background,
-  useNodesState,
-  useEdgesState,
-  addEdge,
   ConnectionLineType,
-  type Connection,
-  type Edge,
   type ColorMode,
+  type NodeTypes,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+import "@liveblocks/react-ui/styles.css";
+import "@liveblocks/react-flow/styles.css";
 
-// Fix lỗi Hydration Mismatch bằng SyncExternalStore
+import { useLiveblocksFlow, Cursors } from "@liveblocks/react-flow";
+import { useStorage, useMutation } from "@liveblocks/react/suspense";
+import { LiveObject } from "@liveblocks/client";
+import { StepNode } from "./step-node";
+
 const emptySubscribe = () => () => {};
 function useMounted() {
   return useSyncExternalStore(
@@ -26,70 +27,63 @@ function useMounted() {
   );
 }
 
-const initialNodes = [
-  {
-    id: "1",
-    position: { x: 100, y: 100 },
-    data: { label: "Start Workflow" },
-  },
-  {
-    id: "2",
-    position: { x: 100, y: 250 },
-    data: { label: "Open Page" },
-  },
-];
-
-const initialEdges: Edge[] = [
-  {
-    id: "e1-2",
-    source: "1",
-    target: "2",
-    type: "smoothstep",
-  },
-];
+const nodeTypes: NodeTypes = {
+  step: StepNode,
+};
 
 export function Canvas() {
-  const { resolvedTheme } = useTheme();
-  const mounted = useMounted();
+  const { theme } = useTheme();
+  const isMounted = useMounted();
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const { nodes, edges, onNodesChange, onEdgesChange, onConnect } =
+    useLiveblocksFlow();
 
-  const onConnect = useCallback(
-    (params: Connection) =>
-      setEdges((eds) =>
-        addEdge(
-          { ...params, type: "smoothstep", animated: true },
-          eds
-        )
-      ),
-    [setEdges]
-  );
+  // Đọc danh sách nodes trực tiếp từ Storage cây Liveblocks
+  const storageNodes = useStorage((root) => root.nodes);
 
-  // Đồng bộ theme với next-themes
-  const colorMode: ColorMode = mounted
-    ? (resolvedTheme as ColorMode) || "dark"
-    : "dark";
+  // Mutation ghi trực tiếp node ban đầu vào Storage nếu chưa có
+  const ensureInitialNode = useMutation(({ storage }) => {
+    const liveNodes = storage.get("nodes");
+    if (liveNodes && liveNodes.length === 0) {
+      liveNodes.push(
+        new LiveObject({
+          id: "initial-start-node",
+          type: "step",
+          position: { x: 250, y: 150 },
+          data: {
+            label: "Start Workflow",
+            type: "INITIAL",
+          },
+        })
+      );
+    }
+  }, []);
+
+  // Tự động kích hoạt khi Canvas mount và storageNodes rỗng
+  useEffect(() => {
+    if (storageNodes && storageNodes.length === 0) {
+      ensureInitialNode();
+    }
+  }, [storageNodes, ensureInitialNode]);
+
+  const colorMode: ColorMode =
+    isMounted && theme === "dark" ? "dark" : "light";
 
   return (
-    <div className="size-full">
+    <div className="h-full w-full relative">
       <ReactFlow
-        nodes={nodes}
-        edges={edges}
+        nodes={(nodes ?? []) as any[]}
+        edges={edges ?? []}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        nodeTypes={nodeTypes}
         colorMode={colorMode}
         connectionLineType={ConnectionLineType.SmoothStep}
-        defaultEdgeOptions={{
-          type: "smoothstep",
-          style: { stroke: "var(--border)", strokeWidth: 2 },
-        }}
-        maxZoom={1}
         fitView
       >
         <Controls />
-        <Background />
+        <Cursors />
       </ReactFlow>
     </div>
   );
